@@ -10,10 +10,19 @@ const CLR_MUTED   = '#888888';
 const CANVAS_W = 480;
 const CANVAS_H = 800;
 
+// Suggestion layout constants
+const SUGG_X    = 90;
+const SUGG_Y    = 102;
+const SUGG_W    = 300;
+const SUGG_H    = 48;
+const SUGG_GAP  = 4;
+const SUGG_R    = 8;
+
 // Search state
 let searchInputField;
 let searchQueryText   = '';
 let filteredFoodItems = [];
+let selectedFoodItem  = null;
 
 function setup() {
   let cnv = createCanvas(CANVAS_W, CANVAS_H);
@@ -46,6 +55,7 @@ function draw() {
   drawAppTitle();
   drawSearchLabel();
   drawSuggestions();
+  drawSelectedItem();
   noLoop(); // only redraw on input changes
 }
 
@@ -70,37 +80,85 @@ function drawSearchLabel() {
 function drawSuggestions() {
   if (filteredFoodItems.length === 0) return;
 
-  const startX  = 90;
-  const startY  = 102;
-  const itemH   = 48;
-  const itemW   = 300;
-  const radius  = 8;
-
   filteredFoodItems.forEach(function(item, idx) {
-    const rowY = startY + idx * (itemH + 4);
+    const rowY     = SUGG_Y + idx * (SUGG_H + SUGG_GAP);
+    const hovered  = mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
+                     mouseY >= rowY   && mouseY <= rowY + SUGG_H;
 
-    // Row background
-    fill(CLR_WHITE);
+    // Row background — tint on hover
+    fill(hovered ? '#EEF5F0' : CLR_WHITE);
     stroke(CLR_PRIMARY);
-    strokeWeight(1.5);
-    rect(startX, rowY, itemW, itemH, radius);
+    strokeWeight(hovered ? 2 : 1.5);
+    rect(SUGG_X, rowY, SUGG_W, SUGG_H, SUGG_R);
 
     // Item name
     noStroke();
     fill(CLR_TEXT);
     textSize(14);
     textAlign(LEFT, TOP);
-    text(item.naam, startX + 12, rowY + 8);
+    text(item.naam, SUGG_X + 12, rowY + 8);
 
     // Portion description
     fill(CLR_MUTED);
     textSize(11);
-    text(item.portieOmschrijving, startX + 12, rowY + 26);
+    text(item.portieOmschrijving, SUGG_X + 12, rowY + 26);
 
     // Calories (right-aligned)
     fill(CLR_ACCENT);
     textSize(13);
     textAlign(RIGHT, TOP);
-    text(item.kcal + ' kcal', startX + itemW - 10, rowY + 16);
+    text(item.kcal + ' kcal', SUGG_X + SUGG_W - 10, rowY + 16);
+  });
+}
+
+function drawSelectedItem() {
+  if (!selectedFoodItem) return;
+
+  const boxY = SUGG_Y;
+  fill(CLR_WHITE);
+  stroke(CLR_PRIMARY);
+  strokeWeight(2);
+  rect(SUGG_X, boxY, SUGG_W, SUGG_H, SUGG_R);
+
+  // Checkmark badge
+  fill(CLR_PRIMARY);
+  noStroke();
+  textSize(16);
+  textAlign(LEFT, TOP);
+  text('✓', SUGG_X + 10, boxY + 14);
+
+  // Item name
+  fill(CLR_TEXT);
+  textSize(14);
+  text(selectedFoodItem.naam, SUGG_X + 34, boxY + 8);
+
+  // Calories
+  fill(CLR_ACCENT);
+  textSize(13);
+  textAlign(RIGHT, TOP);
+  text(selectedFoodItem.kcal + ' kcal', SUGG_X + SUGG_W - 10, boxY + 16);
+
+  // Portion
+  fill(CLR_MUTED);
+  textSize(11);
+  textAlign(LEFT, TOP);
+  text(selectedFoodItem.portieOmschrijving, SUGG_X + 34, boxY + 28);
+}
+
+function mouseMoved() {
+  if (filteredFoodItems.length > 0) redraw();
+}
+
+function mousePressed() {
+  filteredFoodItems.forEach(function(item, idx) {
+    const rowY = SUGG_Y + idx * (SUGG_H + SUGG_GAP);
+    if (mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
+        mouseY >= rowY   && mouseY <= rowY + SUGG_H) {
+      selectedFoodItem  = item;
+      searchQueryText   = '';
+      filteredFoodItems = [];
+      searchInputField.value('');
+      redraw();
+    }
   });
 }

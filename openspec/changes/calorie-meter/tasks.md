@@ -7,7 +7,7 @@
 ## 2. Voedingsdatabase & Zoekfunctie
 
 - [x] 2.1 Implementeer live zoekfunctie in `sketch.js`: filter `foods`-array op ingevoerde tekst (minimaal 2 tekens)
-- [ ] 2.2 Toon maximaal 5 zoeksuggesties als klikbare elementen onder het zoekveld
+- [x] 2.2 Toon maximaal 5 zoeksuggesties als klikbare elementen onder het zoekveld
 - [ ] 2.3 Implementeer "Niet gevonden" flow: toon handmatig invoerveld voor naam + calorieën wanneer geen resultaten
 
 ## 3. Voedsel Loggen
