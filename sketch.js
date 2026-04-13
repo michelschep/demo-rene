@@ -1,12 +1,18 @@
 // Calorie Meter — p5.js sketch
 // Healthy House palette
-const CLR_BG      = '#F7F3EE';
-const CLR_PRIMARY = '#6B9E78';
-const CLR_AMBER   = '#E8A838';
-const CLR_ACCENT  = '#C97B4B';
-const CLR_TEXT    = '#2C2C2C';
-const CLR_WHITE   = '#FFFFFF';
-const CLR_MUTED   = '#888888';
+const CLR_BG            = '#F7F3EE';  // warm white background
+const CLR_PRIMARY       = '#6B9E78';  // sage green
+const CLR_PRIMARY_HOVER = '#5A8F67';  // darker sage — button hover
+const CLR_PRIMARY_LIGHT = '#EEF5F0';  // very light sage — list-item hover
+const CLR_AMBER         = '#E8A838';  // amber (70–90 % ring, Ontbijt)
+const CLR_ACCENT        = '#C97B4B';  // terracotta (90 %+ ring, Diner)
+const CLR_TEXT          = '#2C2C2C';  // near-black text
+const CLR_WHITE         = '#FFFFFF';
+const CLR_MUTED         = '#888888';  // grey labels
+const CLR_SNACK         = '#A8C5B0';  // soft sage — Snack category chip
+const CLR_BORDER        = '#DCDCD2';  // subtle ring track / panel border
+const CLR_ITEM_BORDER   = '#CCCCCC';  // log item card border
+const CLR_DANGER_HOVER  = '#D94F3B';  // danger red — delete (✕) hover
 
 const CANVAS_W = 480;
 const CANVAS_H = 800;
@@ -25,10 +31,10 @@ const MEAL_BAR_H = 14;
 const MEAL_BAR_R = 7;
 
 const CAT_COLORS = {
-  'Ontbijt': '#E8A838',
-  'Lunch':   '#6B9E78',
-  'Diner':   '#C97B4B',
-  'Snack':   '#A8C5B0'
+  'Ontbijt': CLR_AMBER,
+  'Lunch':   CLR_PRIMARY,
+  'Diner':   CLR_ACCENT,
+  'Snack':   CLR_SNACK
 };
 
 // Suggestion layout constants
@@ -248,7 +254,7 @@ function drawManualEntry() {
   // "Toevoegen" drawn button
   const btnHovered = mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
                      mouseY >= MANUAL_BTN_Y && mouseY <= MANUAL_BTN_Y + MANUAL_BTN_H;
-  fill(btnHovered ? '#5A8F67' : CLR_PRIMARY);
+  fill(btnHovered ? CLR_PRIMARY_HOVER : CLR_PRIMARY);
   noStroke();
   rect(SUGG_X, MANUAL_BTN_Y, SUGG_W, MANUAL_BTN_H, MANUAL_BTN_R);
 
@@ -272,7 +278,7 @@ function drawCategorySelector() {
       fill(CLR_PRIMARY);
       noStroke();
     } else {
-      fill(hovered ? '#EEF5F0' : CLR_WHITE);
+      fill(hovered ? CLR_PRIMARY_LIGHT : CLR_WHITE);
       stroke(CLR_PRIMARY);
       strokeWeight(1.5);
     }
@@ -346,7 +352,7 @@ function drawMealDistributionBar() {
 
   // Background track
   noStroke();
-  fill(220, 220, 210);
+  fill(CLR_BORDER);
   rect(MEAL_BAR_X, MEAL_BAR_Y, MEAL_BAR_W, MEAL_BAR_H, MEAL_BAR_R);
 
   // Clip to rounded bar shape, then draw proportional segments
@@ -383,7 +389,7 @@ function drawMealDistributionBar() {
 function drawProgressRing(totalKcal) {
   // Background track (full circle)
   noFill();
-  stroke(220, 220, 210);
+  stroke(CLR_BORDER);
   strokeWeight(RING_SW);
   strokeCap(ROUND);
   ellipse(RING_CX, RING_CY, RING_R * 2, RING_R * 2);
@@ -449,7 +455,7 @@ function drawSettingsOverlay() {
 
   // Panel
   fill(CLR_WHITE);
-  stroke(220, 220, 210);
+  stroke(CLR_BORDER);
   strokeWeight(1);
   rect(SETTINGS_PANEL_X, SETTINGS_PANEL_Y, SETTINGS_PANEL_W, SETTINGS_PANEL_H, 12);
 
@@ -471,7 +477,7 @@ function drawSettingsOverlay() {
   // Opslaan button
   const saveBtnHovered = mouseX >= SETTINGS_SAVE_X && mouseX <= SETTINGS_SAVE_X + SETTINGS_SAVE_W &&
                          mouseY >= SETTINGS_SAVE_Y && mouseY <= SETTINGS_SAVE_Y + SETTINGS_SAVE_H;
-  fill(saveBtnHovered ? '#5A8F67' : CLR_PRIMARY);
+  fill(saveBtnHovered ? CLR_PRIMARY_HOVER : CLR_PRIMARY);
   noStroke();
   rect(SETTINGS_SAVE_X, SETTINGS_SAVE_Y, SETTINGS_SAVE_W, SETTINGS_SAVE_H, 8);
 
@@ -510,7 +516,7 @@ function drawSuggestions() {
                      mouseY >= rowY   && mouseY <= rowY + SUGG_H;
 
     // Row background — tint on hover
-    fill(hovered ? '#EEF5F0' : CLR_WHITE);
+    fill(hovered ? CLR_PRIMARY_LIGHT : CLR_WHITE);
     stroke(CLR_PRIMARY);
     strokeWeight(hovered ? 2 : 1.5);
     rect(SUGG_X, rowY, SUGG_W, SUGG_H, SUGG_R);
@@ -571,7 +577,7 @@ function drawSelectedItem() {
   // "Toevoegen aan log" button
   const btnHovered = mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
                      mouseY >= LOG_BTN_Y && mouseY <= LOG_BTN_Y + LOG_BTN_H;
-  fill(btnHovered ? '#5A8F67' : CLR_PRIMARY);
+  fill(btnHovered ? CLR_PRIMARY_HOVER : CLR_PRIMARY);
   noStroke();
   rect(SUGG_X, LOG_BTN_Y, SUGG_W, LOG_BTN_H, LOG_BTN_R);
 
@@ -673,7 +679,7 @@ function drawDagLog() {
       const itemY = row.y;
 
       fill(CLR_WHITE);
-      stroke(204, 204, 204);
+      stroke(CLR_ITEM_BORDER);
       strokeWeight(1);
       rect(SUGG_X, itemY, SUGG_W, LOG_ITEM_H, 8);
 
@@ -692,7 +698,7 @@ function drawDagLog() {
       const delHov = mouseX >= db.x && mouseX <= db.x + db.w &&
                      mouseY >= db.y && mouseY <= db.y + db.h;
       noStroke();
-      fill(delHov ? '#D94F3B' : CLR_MUTED);
+      fill(delHov ? CLR_DANGER_HOVER : CLR_MUTED);
       textSize(16);
       textAlign(CENTER, CENTER);
       text('✕', db.x + db.w / 2, db.y + db.h / 2);
