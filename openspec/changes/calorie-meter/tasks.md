@@ -18,7 +18,7 @@
 
 ## 4. localStorage Persistentie
 
-- [ ] 4.1 Sla daglog op in `localStorage` onder sleutel `cm_log_YYYY-MM-DD` bij elke wijziging
+- [x] 4.1 Sla daglog op in `localStorage` onder sleutel `cm_log_YYYY-MM-DD` bij elke wijziging
 - [ ] 4.2 Laad bestaande daglog uit `localStorage` bij opstarten; start leeg op een nieuwe dag
 - [ ] 4.3 Sla dagdoel op in `localStorage` onder `cm_settings`; gebruik 2000 kcal als standaard
 
