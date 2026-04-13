@@ -26,7 +26,7 @@
 
 - [x] 5.1 Teken geanimeerde cirkelring die dagelijkse voortgang toont (percentage van doel)
 - [x] 5.2 Implementeer kleurovergang: groen (0-70%) → amber (70-90%) → terracotta (90%+)
-- [ ] 5.3 Toon "X / Y kcal" in het midden van de ring, bijgewerkt bij elke log-wijziging
+- [x] 5.3 Toon "X / Y kcal" in het midden van de ring, bijgewerkt bij elke log-wijziging
 - [ ] 5.4 Teken horizontale maaltijdverdeling-balk onder de ring met gekleurde segmenten per categorie
 
 ## 6. Dagelijks Overzicht

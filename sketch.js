@@ -179,7 +179,7 @@ function draw() {
     ringAnim = ringTarget;
     noLoop();
   }
-  drawProgressRing();
+  drawProgressRing(totalKcal);
 
   drawSuggestions();
   if (showManualEntry) drawManualEntry();
@@ -266,7 +266,7 @@ function clearSearch() {
   manualKcalField.value('');
 }
 
-function drawProgressRing() {
+function drawProgressRing(totalKcal) {
   // Background track (full circle)
   noFill();
   stroke(220, 220, 210);
@@ -290,6 +290,18 @@ function drawProgressRing() {
   }
 
   noStroke();
+
+  // "X / Y" centred in ring
+  fill(CLR_TEXT);
+  textSize(15);
+  textStyle(BOLD);
+  textAlign(CENTER, CENTER);
+  text(totalKcal + ' / ' + dagDoel, RING_CX, RING_CY - 8);
+  textStyle(NORMAL);
+
+  fill(CLR_MUTED);
+  textSize(11);
+  text('kcal', RING_CX, RING_CY + 10);
 }
 
 function drawAppTitle() {
