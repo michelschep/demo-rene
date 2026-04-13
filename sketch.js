@@ -17,6 +17,20 @@ const RING_CY = 300;
 const RING_R  = 65;
 const RING_SW = 16;
 
+// Meal distribution bar (below the ring)
+const MEAL_BAR_X = 90;
+const MEAL_BAR_Y = RING_CY + RING_R + RING_SW / 2 + 16;  // 389
+const MEAL_BAR_W = 300;
+const MEAL_BAR_H = 14;
+const MEAL_BAR_R = 7;
+
+const CAT_COLORS = {
+  'Ontbijt': '#E8A838',
+  'Lunch':   '#6B9E78',
+  'Diner':   '#C97B4B',
+  'Snack':   '#A8C5B0'
+};
+
 // Suggestion layout constants
 const SUGG_X   = 90;
 const SUGG_Y   = 102;
@@ -180,6 +194,7 @@ function draw() {
     noLoop();
   }
   drawProgressRing(totalKcal);
+  drawMealDistributionBar();
 
   drawSuggestions();
   if (showManualEntry) drawManualEntry();
@@ -266,7 +281,53 @@ function clearSearch() {
   manualKcalField.value('');
 }
 
-function drawProgressRing(totalKcal) {
+function drawMealDistributionBar() {
+  if (dagLog.length === 0) return;
+
+  const totalKcal = dagLog.reduce(function(s, e) { return s + e.kcal; }, 0);
+  if (totalKcal === 0) return;
+
+  const kcalByCat = {};
+  CATEGORIES.forEach(function(cat) { kcalByCat[cat] = 0; });
+  dagLog.forEach(function(e) { kcalByCat[e.categorie] = (kcalByCat[e.categorie] || 0) + e.kcal; });
+
+  // Background track
+  noStroke();
+  fill(220, 220, 210);
+  rect(MEAL_BAR_X, MEAL_BAR_Y, MEAL_BAR_W, MEAL_BAR_H, MEAL_BAR_R);
+
+  // Clip to rounded bar shape, then draw proportional segments
+  drawingContext.save();
+  drawingContext.beginPath();
+  const r = MEAL_BAR_R, x = MEAL_BAR_X, y = MEAL_BAR_Y, w = MEAL_BAR_W, h = MEAL_BAR_H;
+  drawingContext.moveTo(x + r, y);
+  drawingContext.lineTo(x + w - r, y);
+  drawingContext.arcTo(x + w, y, x + w, y + r, r);
+  drawingContext.lineTo(x + w, y + h - r);
+  drawingContext.arcTo(x + w, y + h, x + w - r, y + h, r);
+  drawingContext.lineTo(x + r, y + h);
+  drawingContext.arcTo(x, y + h, x, y + h - r, r);
+  drawingContext.lineTo(x, y + r);
+  drawingContext.arcTo(x, y, x + r, y, r);
+  drawingContext.closePath();
+  drawingContext.clip();
+
+  let curX = MEAL_BAR_X;
+  CATEGORIES.forEach(function(cat) {
+    const kcal = kcalByCat[cat] || 0;
+    if (kcal > 0) {
+      const segW = (kcal / totalKcal) * MEAL_BAR_W;
+      fill(CAT_COLORS[cat]);
+      noStroke();
+      rect(curX, MEAL_BAR_Y, segW, MEAL_BAR_H);
+      curX += segW;
+    }
+  });
+
+  drawingContext.restore();
+}
+
+
   // Background track (full circle)
   noFill();
   stroke(220, 220, 210);
