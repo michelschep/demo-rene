@@ -10,6 +10,12 @@ const CLR_MUTED   = '#888888';
 const CANVAS_W = 480;
 const CANVAS_H = 800;
 
+// Progress ring layout constants
+const RING_CX = CANVAS_W / 2;  // 240
+const RING_CY = 300;
+const RING_R  = 65;
+const RING_SW = 16;
+
 // Suggestion layout constants
 const SUGG_X   = 90;
 const SUGG_Y   = 102;
@@ -61,6 +67,9 @@ let selectedMealCategory = 'Snack';
 
 // Settings state
 let dagDoel = 2000;
+
+// Progress ring animation state
+let ringAnim = 0;
 
 function saveSettings() {
   localStorage.setItem('cm_settings', JSON.stringify({ dagDoel: dagDoel }));
@@ -159,12 +168,23 @@ function draw() {
   background(CLR_BG);
   drawAppTitle();
   drawSearchLabel();
+
+  // Animate ring toward current progress; keep looping until settled
+  const totalKcal = dagLog.reduce(function(sum, e) { return sum + e.kcal; }, 0);
+  const ringTarget = min(totalKcal / dagDoel, 1.0);
+  if (abs(ringTarget - ringAnim) > 0.002) {
+    ringAnim = lerp(ringAnim, ringTarget, 0.12);
+  } else {
+    ringAnim = ringTarget;
+    noLoop();
+  }
+  drawProgressRing();
+
   drawSuggestions();
   if (showManualEntry) drawManualEntry();
   drawSelectedItem();
   if (selectedFoodItem) drawCategorySelector();
   drawDagLog();
-  noLoop(); // only redraw on input changes
 }
 
 function drawManualEntry() {
@@ -243,6 +263,24 @@ function clearSearch() {
   manualNameField.value('');
   manualKcalField.hide();
   manualKcalField.value('');
+}
+
+function drawProgressRing() {
+  // Background track (full circle)
+  noFill();
+  stroke(220, 220, 210);
+  strokeWeight(RING_SW);
+  strokeCap(ROUND);
+  ellipse(RING_CX, RING_CY, RING_R * 2, RING_R * 2);
+
+  // Animated progress arc — colour coding added in task 5.2
+  if (ringAnim > 0.001) {
+    stroke(CLR_PRIMARY);
+    const sweepAngle = ringAnim * TWO_PI;
+    arc(RING_CX, RING_CY, RING_R * 2, RING_R * 2, -HALF_PI, -HALF_PI + sweepAngle);
+  }
+
+  noStroke();
 }
 
 function drawAppTitle() {
@@ -453,7 +491,7 @@ function mousePressed() {
       mouseY >= LOG_BTN_Y && mouseY <= LOG_BTN_Y + LOG_BTN_H) {
     addToLog(selectedFoodItem);
     selectedFoodItem = null;
-    redraw();
+    loop(); // triggers ring animation
   }
 
   // Delete log item via ✕ button
@@ -462,7 +500,7 @@ function mousePressed() {
     if (mouseX >= db.x && mouseX <= db.x + db.w &&
         mouseY >= db.y && mouseY <= db.y + db.h) {
       removeFromLog(i);
-      redraw();
+      loop(); // triggers ring animation
       return;
     }
   }
