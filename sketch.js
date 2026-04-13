@@ -522,8 +522,6 @@ function addToLog(item) {
 }
 
 function drawDagLog() {
-  if (dagLog.length === 0) return;
-
   noStroke();
   fill(CLR_TEXT);
   textSize(13);
@@ -531,6 +529,14 @@ function drawDagLog() {
   textAlign(LEFT, BASELINE);
   text('Daglog', SUGG_X, LOG_START_Y);
   textStyle(NORMAL);
+
+  if (dagLog.length === 0) {
+    fill(CLR_MUTED);
+    textSize(13);
+    textAlign(CENTER, CENTER);
+    text('Begin de dag goed — voeg je eerste maaltijd toe! 🌱', CANVAS_W / 2, LOG_START_Y + 30);
+    return;
+  }
 
   buildLogLayout().forEach(function(row) {
     if (row.type === 'header') {
