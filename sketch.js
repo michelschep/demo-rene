@@ -71,6 +71,23 @@ const MANUAL_BTN_Y       = SUGG_Y + 100;  // drawn button top Y
 const MANUAL_BTN_H       = 44;
 const MANUAL_BTN_R       = 8;
 
+// Settings overlay layout constants
+const SETTINGS_ICON_X  = CANVAS_W - 40;
+const SETTINGS_ICON_Y  = 10;
+const SETTINGS_ICON_W  = 30;
+const SETTINGS_ICON_H  = 30;
+const SETTINGS_PANEL_W = 280;
+const SETTINGS_PANEL_H = 180;
+const SETTINGS_PANEL_X = (CANVAS_W - SETTINGS_PANEL_W) / 2;   // 100
+const SETTINGS_PANEL_Y = (CANVAS_H - SETTINGS_PANEL_H) / 2;   // 310
+const SETTINGS_INPUT_W = 120;
+const SETTINGS_INPUT_X = SETTINGS_PANEL_X + (SETTINGS_PANEL_W - SETTINGS_INPUT_W) / 2;  // 180
+const SETTINGS_INPUT_Y = SETTINGS_PANEL_Y + 80;
+const SETTINGS_SAVE_X  = SETTINGS_PANEL_X + 20;
+const SETTINGS_SAVE_W  = SETTINGS_PANEL_W - 40;
+const SETTINGS_SAVE_Y  = SETTINGS_PANEL_Y + 124;
+const SETTINGS_SAVE_H  = 36;
+
 // Search state
 let canvasPos;
 let searchInputField;
@@ -87,6 +104,10 @@ let dagDoel = 2000;
 
 // Progress ring animation state
 let ringAnim = 0;
+
+// Settings overlay state
+let showSettingsOverlay = false;
+let settingsGoalField;
 
 function saveSettings() {
   localStorage.setItem('cm_settings', JSON.stringify({ dagDoel: dagDoel }));
@@ -147,6 +168,14 @@ function setup() {
   manualKcalField.position(canvasPos.x + SUGG_X + MANUAL_NAME_W + 8, canvasPos.y + MANUAL_INPUT_Y);
   manualKcalField.hide();
 
+  settingsGoalField = createInput('');
+  settingsGoalField.attribute('type', 'number');
+  settingsGoalField.attribute('min', '100');
+  settingsGoalField.attribute('max', '9999');
+  settingsGoalField.size(SETTINGS_INPUT_W);
+  settingsGoalField.position(canvasPos.x + SETTINGS_INPUT_X, canvasPos.y + SETTINGS_INPUT_Y);
+  settingsGoalField.hide();
+
   textFont('Nunito');
   loadSettings();
   loadLog();
@@ -204,6 +233,8 @@ function draw() {
   drawSelectedItem();
   if (selectedFoodItem) drawCategorySelector();
   drawDagLog();
+  drawSettingsIcon();
+  if (showSettingsOverlay) drawSettingsOverlay();
 }
 
 function drawManualEntry() {
@@ -349,7 +380,7 @@ function drawMealDistributionBar() {
   drawingContext.restore();
 }
 
-
+function drawProgressRing(totalKcal) {
   // Background track (full circle)
   noFill();
   stroke(220, 220, 210);
@@ -385,6 +416,71 @@ function drawMealDistributionBar() {
   fill(CLR_MUTED);
   textSize(11);
   text('kcal', RING_CX, RING_CY + 10);
+}
+
+function openSettingsOverlay() {
+  showSettingsOverlay = true;
+  settingsGoalField.value(String(dagDoel));
+  settingsGoalField.show();
+  loop();
+}
+
+function closeSettingsOverlay() {
+  showSettingsOverlay = false;
+  settingsGoalField.hide();
+  redraw();
+}
+
+function drawSettingsIcon() {
+  const hovered = mouseX >= SETTINGS_ICON_X && mouseX <= SETTINGS_ICON_X + SETTINGS_ICON_W &&
+                  mouseY >= SETTINGS_ICON_Y && mouseY <= SETTINGS_ICON_Y + SETTINGS_ICON_H;
+  noStroke();
+  fill(hovered ? CLR_PRIMARY : CLR_MUTED);
+  textSize(20);
+  textAlign(CENTER, CENTER);
+  text('⚙', SETTINGS_ICON_X + SETTINGS_ICON_W / 2, SETTINGS_ICON_Y + SETTINGS_ICON_H / 2);
+}
+
+function drawSettingsOverlay() {
+  // Dim background
+  noStroke();
+  fill(0, 0, 0, 140);
+  rect(0, 0, CANVAS_W, CANVAS_H);
+
+  // Panel
+  fill(CLR_WHITE);
+  stroke(220, 220, 210);
+  strokeWeight(1);
+  rect(SETTINGS_PANEL_X, SETTINGS_PANEL_Y, SETTINGS_PANEL_W, SETTINGS_PANEL_H, 12);
+
+  // Title
+  noStroke();
+  fill(CLR_TEXT);
+  textSize(16);
+  textStyle(BOLD);
+  textAlign(CENTER, TOP);
+  text('Dagdoel instellen', CANVAS_W / 2, SETTINGS_PANEL_Y + 18);
+  textStyle(NORMAL);
+
+  // Label above input
+  fill(CLR_MUTED);
+  textSize(12);
+  textAlign(CENTER, TOP);
+  text('Dagelijks caloriedoel (kcal)', CANVAS_W / 2, SETTINGS_PANEL_Y + 54);
+
+  // Opslaan button
+  const saveBtnHovered = mouseX >= SETTINGS_SAVE_X && mouseX <= SETTINGS_SAVE_X + SETTINGS_SAVE_W &&
+                         mouseY >= SETTINGS_SAVE_Y && mouseY <= SETTINGS_SAVE_Y + SETTINGS_SAVE_H;
+  fill(saveBtnHovered ? '#5A8F67' : CLR_PRIMARY);
+  noStroke();
+  rect(SETTINGS_SAVE_X, SETTINGS_SAVE_Y, SETTINGS_SAVE_W, SETTINGS_SAVE_H, 8);
+
+  fill(CLR_WHITE);
+  textSize(14);
+  textStyle(BOLD);
+  textAlign(CENTER, CENTER);
+  text('Opslaan', CANVAS_W / 2, SETTINGS_SAVE_Y + SETTINGS_SAVE_H / 2);
+  textStyle(NORMAL);
 }
 
 function drawAppTitle() {
@@ -607,9 +703,37 @@ function drawDagLog() {
 function mouseMoved() {
   if (filteredFoodItems.length > 0 || showManualEntry || selectedFoodItem) redraw();
   if (dagLog.length > 0) redraw();
+  if (showSettingsOverlay) redraw();
+  if (mouseX >= SETTINGS_ICON_X && mouseX <= SETTINGS_ICON_X + SETTINGS_ICON_W &&
+      mouseY >= SETTINGS_ICON_Y && mouseY <= SETTINGS_ICON_Y + SETTINGS_ICON_H) redraw();
 }
 
 function mousePressed() {
+  // Settings icon — open overlay
+  if (!showSettingsOverlay &&
+      mouseX >= SETTINGS_ICON_X && mouseX <= SETTINGS_ICON_X + SETTINGS_ICON_W &&
+      mouseY >= SETTINGS_ICON_Y && mouseY <= SETTINGS_ICON_Y + SETTINGS_ICON_H) {
+    openSettingsOverlay();
+    return;
+  }
+
+  // Settings overlay interactions
+  if (showSettingsOverlay) {
+    // Opslaan button (save logic in task 7.2 — for now just close)
+    if (mouseX >= SETTINGS_SAVE_X && mouseX <= SETTINGS_SAVE_X + SETTINGS_SAVE_W &&
+        mouseY >= SETTINGS_SAVE_Y && mouseY <= SETTINGS_SAVE_Y + SETTINGS_SAVE_H) {
+      closeSettingsOverlay();
+      return;
+    }
+    // Click outside panel closes overlay
+    if (mouseX < SETTINGS_PANEL_X || mouseX > SETTINGS_PANEL_X + SETTINGS_PANEL_W ||
+        mouseY < SETTINGS_PANEL_Y || mouseY > SETTINGS_PANEL_Y + SETTINGS_PANEL_H) {
+      closeSettingsOverlay();
+      return;
+    }
+    return; // Swallow all other overlay clicks
+  }
+
   filteredFoodItems.forEach(function(item, idx) {
     const rowY = SUGG_Y + idx * (SUGG_H + SUGG_GAP);
     if (mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
