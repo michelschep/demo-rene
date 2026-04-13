@@ -45,4 +45,4 @@
 - [x] 8.1 Controleer alle kleuren op overeenkomst met Healthy House palet (salie groen, terracotta, warm wit)
 - [x] 8.2 Verifieer dat geen p5.js gereserveerde namen gebruikt worden als variabelen (`width`, `height`, `color`, etc.)
 - [x] 8.3 Test in browser: console vrij van errors, data persistent na refresh, animaties soepel
-- [ ] 8.4 Commit als `feat: add calorie-meter p5.js app`
+- [x] 8.4 Commit als `feat: add calorie-meter p5.js app`
