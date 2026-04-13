@@ -719,10 +719,16 @@ function mousePressed() {
 
   // Settings overlay interactions
   if (showSettingsOverlay) {
-    // Opslaan button (save logic in task 7.2 — for now just close)
+    // Opslaan button — read new goal, persist, update ring
     if (mouseX >= SETTINGS_SAVE_X && mouseX <= SETTINGS_SAVE_X + SETTINGS_SAVE_W &&
         mouseY >= SETTINGS_SAVE_Y && mouseY <= SETTINGS_SAVE_Y + SETTINGS_SAVE_H) {
+      const parsed = parseInt(settingsGoalField.value(), 10);
+      if (!isNaN(parsed) && parsed >= 100) {
+        dagDoel = parsed;
+        saveSettings();
+      }
       closeSettingsOverlay();
+      redraw();
       return;
     }
     // Click outside panel closes overlay

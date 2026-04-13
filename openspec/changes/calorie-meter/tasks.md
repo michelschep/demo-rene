@@ -38,7 +38,7 @@
 ## 7. Instellingen
 
 - [x] 7.1 Voeg instellingen-icoon (⚙) toe aan de app; toon bij klik een overlay met dagdoel-invoerveld
-- [ ] 7.2 Sla nieuw dagdoel op in `localStorage` en update ring en teller direct
+- [x] 7.2 Sla nieuw dagdoel op in `localStorage` en update ring en teller direct
 
 ## 8. Afronding & Stijl
 
