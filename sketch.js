@@ -2,6 +2,7 @@
 // Healthy House palette
 const CLR_BG      = '#F7F3EE';
 const CLR_PRIMARY = '#6B9E78';
+const CLR_AMBER   = '#E8A838';
 const CLR_ACCENT  = '#C97B4B';
 const CLR_TEXT    = '#2C2C2C';
 const CLR_WHITE   = '#FFFFFF';
@@ -273,9 +274,17 @@ function drawProgressRing() {
   strokeCap(ROUND);
   ellipse(RING_CX, RING_CY, RING_R * 2, RING_R * 2);
 
-  // Animated progress arc — colour coding added in task 5.2
+  // Animated progress arc — colour codes by progress zone
   if (ringAnim > 0.001) {
-    stroke(CLR_PRIMARY);
+    let ringClr;
+    if (ringAnim < 0.7) {
+      ringClr = CLR_PRIMARY;   // green  0–70 %
+    } else if (ringAnim < 0.9) {
+      ringClr = CLR_AMBER;     // amber 70–90 %
+    } else {
+      ringClr = CLR_ACCENT;    // terracotta 90 %+
+    }
+    stroke(ringClr);
     const sweepAngle = ringAnim * TWO_PI;
     arc(RING_CX, RING_CY, RING_R * 2, RING_R * 2, -HALF_PI, -HALF_PI + sweepAngle);
   }
