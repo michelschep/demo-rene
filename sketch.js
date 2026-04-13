@@ -59,6 +59,21 @@ let selectedFoodItem  = null;
 let dagLog = [];
 let selectedMealCategory = 'Snack';
 
+// Settings state
+let dagDoel = 2000;
+
+function saveSettings() {
+  localStorage.setItem('cm_settings', JSON.stringify({ dagDoel: dagDoel }));
+}
+
+function loadSettings() {
+  const stored = localStorage.getItem('cm_settings');
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    if (parsed.dagDoel && parsed.dagDoel > 0) dagDoel = parsed.dagDoel;
+  }
+}
+
 function todayKey() {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -107,6 +122,7 @@ function setup() {
   manualKcalField.hide();
 
   textFont('Nunito');
+  loadSettings();
   loadLog();
 }
 
