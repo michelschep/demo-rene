@@ -55,6 +55,8 @@ const LOG_BTN_R = 8;
 const LOG_START_Y  = 420;
 const LOG_ITEM_H   = 44;
 const LOG_ITEM_GAP = 4;
+const LOG_CAT_H    = 22;
+const LOG_CAT_GAP  = 4;
 
 // Delete button (✕) inside each log item
 const DEL_BTN_SIZE = 24;  // hit area width & height
@@ -465,11 +467,42 @@ function drawSelectedItem() {
   textStyle(NORMAL);
 }
 
-function logItemDeleteBounds(idx) {
-  const itemY = LOG_START_Y + 12 + idx * (LOG_ITEM_H + LOG_ITEM_GAP);
-  const btnX  = SUGG_X + SUGG_W - DEL_BTN_MARGIN - DEL_BTN_SIZE;
-  const btnY  = itemY + (LOG_ITEM_H - DEL_BTN_SIZE) / 2;
-  return { x: btnX, y: btnY, w: DEL_BTN_SIZE, h: DEL_BTN_SIZE };
+// Returns flat array of layout rows for the grouped log.
+// Each row: { type: 'header', cat, y }  or  { type: 'item', entry, idx, y }
+function buildLogLayout() {
+  const rows = [];
+  let curY = LOG_START_Y + 20; // space below the "Daglog" heading
+
+  CATEGORIES.forEach(function(cat) {
+    const catItems = [];
+    dagLog.forEach(function(entry, i) {
+      if (entry.categorie === cat) catItems.push({ entry: entry, idx: i });
+    });
+    if (catItems.length === 0) return;
+
+    rows.push({ type: 'header', cat: cat, y: curY });
+    curY += LOG_CAT_H + LOG_CAT_GAP;
+
+    catItems.forEach(function(x) {
+      rows.push({ type: 'item', entry: x.entry, idx: x.idx, y: curY });
+      curY += LOG_ITEM_H + LOG_ITEM_GAP;
+    });
+
+    curY += 4; // extra gap between category groups
+  });
+
+  return rows;
+}
+
+function logItemDeleteBounds(logIdx) {
+  const row = buildLogLayout().find(function(r) { return r.type === 'item' && r.idx === logIdx; });
+  if (!row) return { x: -9999, y: -9999, w: 0, h: 0 };
+  return {
+    x: SUGG_X + SUGG_W - DEL_BTN_MARGIN - DEL_BTN_SIZE,
+    y: row.y + (LOG_ITEM_H - DEL_BTN_SIZE) / 2,
+    w: DEL_BTN_SIZE,
+    h: DEL_BTN_SIZE
+  };
 }
 
 function removeFromLog(idx) {
@@ -499,38 +532,49 @@ function drawDagLog() {
   text('Daglog', SUGG_X, LOG_START_Y);
   textStyle(NORMAL);
 
-  dagLog.forEach(function(entry, idx) {
-    const itemY = LOG_START_Y + 12 + idx * (LOG_ITEM_H + LOG_ITEM_GAP);
+  buildLogLayout().forEach(function(row) {
+    if (row.type === 'header') {
+      // Category header with colour dot
+      noStroke();
+      fill(CAT_COLORS[row.cat] || CLR_MUTED);
+      ellipse(SUGG_X + 7, row.y + LOG_CAT_H / 2, 8, 8);
 
-    fill(CLR_WHITE);
-    stroke(204, 204, 204);
-    strokeWeight(1);
-    rect(SUGG_X, itemY, SUGG_W, LOG_ITEM_H, 8);
+      fill(CLR_TEXT);
+      textSize(12);
+      textStyle(BOLD);
+      textAlign(LEFT, CENTER);
+      text(row.cat, SUGG_X + 18, row.y + LOG_CAT_H / 2);
+      textStyle(NORMAL);
 
-    noStroke();
-    fill(CLR_TEXT);
-    textSize(13);
-    textAlign(LEFT, TOP);
-    text(entry.naam, SUGG_X + 12, itemY + 8);
+    } else { // item
+      const entry = row.entry;
+      const itemY = row.y;
 
-    fill(CLR_MUTED);
-    textSize(11);
-    text(entry.categorie, SUGG_X + 12, itemY + 26);
+      fill(CLR_WHITE);
+      stroke(204, 204, 204);
+      strokeWeight(1);
+      rect(SUGG_X, itemY, SUGG_W, LOG_ITEM_H, 8);
 
-    fill(CLR_ACCENT);
-    textSize(13);
-    textAlign(RIGHT, TOP);
-    text(entry.kcal + ' kcal', SUGG_X + SUGG_W - DEL_BTN_SIZE - DEL_BTN_MARGIN - 6, itemY + 16);
+      noStroke();
+      fill(CLR_TEXT);
+      textSize(13);
+      textAlign(LEFT, CENTER);
+      text(entry.naam, SUGG_X + 12, itemY + LOG_ITEM_H / 2);
 
-    // ✕ delete button
-    const db      = logItemDeleteBounds(idx);
-    const delHov  = mouseX >= db.x && mouseX <= db.x + db.w &&
-                    mouseY >= db.y && mouseY <= db.y + db.h;
-    noStroke();
-    fill(delHov ? '#D94F3B' : CLR_MUTED);
-    textSize(16);
-    textAlign(CENTER, CENTER);
-    text('✕', db.x + db.w / 2, db.y + db.h / 2);
+      fill(CLR_ACCENT);
+      textSize(13);
+      textAlign(RIGHT, CENTER);
+      text(entry.kcal + ' kcal', SUGG_X + SUGG_W - DEL_BTN_SIZE - DEL_BTN_MARGIN - 6, itemY + LOG_ITEM_H / 2);
+
+      const db     = logItemDeleteBounds(row.idx);
+      const delHov = mouseX >= db.x && mouseX <= db.x + db.w &&
+                     mouseY >= db.y && mouseY <= db.y + db.h;
+      noStroke();
+      fill(delHov ? '#D94F3B' : CLR_MUTED);
+      textSize(16);
+      textAlign(CENTER, CENTER);
+      text('✕', db.x + db.w / 2, db.y + db.h / 2);
+    }
   });
 }
 
