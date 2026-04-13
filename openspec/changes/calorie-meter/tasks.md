@@ -1,7 +1,7 @@
 ## 1. Project Setup
 
 - [x] 1.1 Maak `index.html` aan met p5.js CDN-link, Google Font (Nunito), en verwijzing naar `sketch.js` en `data/foods.js`
-- [ ] 1.2 Maak `style.css` aan met minimale CSS reset, achtergrondkleur `#F7F3EE`, font-instelling en basisstijl voor p5-canvas
+- [x] 1.2 Maak `style.css` aan met minimale CSS reset, achtergrondkleur `#F7F3EE`, font-instelling en basisstijl voor p5-canvas
 - [ ] 1.3 Maak `data/foods.js` aan met een array van ~30 voedingsmiddelen (naam, kcal, portie, portieomschrijving, categorie)
 
 ## 2. Voedingsdatabase & Zoekfunctie
