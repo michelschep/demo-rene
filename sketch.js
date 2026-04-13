@@ -197,6 +197,7 @@ function draw() {
   }
   drawProgressRing(totalKcal);
   drawMealDistributionBar();
+  drawMotivationalMessage(totalKcal);
 
   drawSuggestions();
   if (showManualEntry) drawManualEntry();
@@ -281,6 +282,25 @@ function clearSearch() {
   manualNameField.value('');
   manualKcalField.hide();
   manualKcalField.value('');
+}
+
+function getMotivationalMessage(pct) {
+  if (pct >= 0.4 && pct < 0.7)    return 'Lekker bezig! 💚';
+  if (pct >= 0.95 && pct <= 1.05) return 'Perfect in balans! 🎯 Goed gedaan.';
+  if (pct > 1.10)                  return 'Vandaag wat extra energie 😊 Morgen weer een nieuwe kans.';
+  return '';
+}
+
+function drawMotivationalMessage(totalKcal) {
+  if (dagLog.length === 0) return;
+  const msg = getMotivationalMessage(totalKcal / dagDoel);
+  if (!msg) return;
+
+  noStroke();
+  fill(CLR_TEXT);
+  textSize(11);
+  textAlign(CENTER, CENTER);
+  text(msg, CANVAS_W / 2, MEAL_BAR_Y + MEAL_BAR_H + 11);
 }
 
 function drawMealDistributionBar() {

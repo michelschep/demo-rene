@@ -32,8 +32,8 @@
 ## 6. Dagelijks Overzicht
 
 - [x] 6.1 Render loglijst gegroepeerd per maaltijdcategorie met naam en kcal per item
-- [ ] 6.2 Implementeer lege-staat boodschap wanneer de log leeg is
-- [ ] 6.3 Implementeer contextgevoelige motiverende boodschap op basis van voortgangspercentage (zie specs)
+- [x] 6.2 Implementeer lege-staat boodschap wanneer de log leeg is
+- [x] 6.3 Implementeer contextgevoelige motiverende boodschap op basis van voortgangspercentage (zie specs)
 
 ## 7. Instellingen
 
