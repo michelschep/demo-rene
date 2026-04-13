@@ -71,6 +71,11 @@ function saveLog() {
   localStorage.setItem(todayKey(), JSON.stringify(dagLog));
 }
 
+function loadLog() {
+  const stored = localStorage.getItem(todayKey());
+  dagLog = stored ? JSON.parse(stored) : [];
+}
+
 // Manual entry state
 let manualNameField;
 let manualKcalField;
@@ -102,6 +107,7 @@ function setup() {
   manualKcalField.hide();
 
   textFont('Nunito');
+  loadLog();
 }
 
 function onSearchInput() {
