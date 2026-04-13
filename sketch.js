@@ -18,8 +18,15 @@ const SUGG_H   = 48;
 const SUGG_GAP = 4;
 const SUGG_R   = 8;
 
-// Log button (shown below selected item)
-const LOG_BTN_Y = SUGG_Y + SUGG_H + 8;  // 158
+// Meal category selector (shown below selected item)
+const CATEGORIES    = ['Ontbijt', 'Lunch', 'Diner', 'Snack'];
+const CAT_BTN_Y     = SUGG_Y + SUGG_H + 8;   // 158
+const CAT_BTN_H     = 34;
+const CAT_BTN_GAP   = 4;
+const CAT_BTN_W     = (SUGG_W - (CATEGORIES.length - 1) * CAT_BTN_GAP) / CATEGORIES.length; // 72
+
+// Log button (shown below category selector)
+const LOG_BTN_Y = CAT_BTN_Y + CAT_BTN_H + 8;  // 200
 const LOG_BTN_H = 40;
 const LOG_BTN_R = 8;
 
@@ -46,6 +53,7 @@ let selectedFoodItem  = null;
 
 // Log state
 let dagLog = [];
+let selectedMealCategory = 'Snack';
 
 // Manual entry state
 let manualNameField;
@@ -84,6 +92,10 @@ function onSearchInput() {
   searchQueryText   = searchInputField.value().trim();
   filteredFoodItems = filterFoods(searchQueryText);
 
+  // Clear any active selection when user starts a new search
+  selectedFoodItem     = null;
+  selectedMealCategory = 'Snack';
+
   const noResults = searchQueryText.length >= 2 && filteredFoodItems.length === 0;
   if (noResults !== showManualEntry) {
     showManualEntry = noResults;
@@ -112,6 +124,7 @@ function draw() {
   drawSuggestions();
   if (showManualEntry) drawManualEntry();
   drawSelectedItem();
+  if (selectedFoodItem) drawCategorySelector();
   drawDagLog();
   noLoop(); // only redraw on input changes
 }
@@ -139,17 +152,46 @@ function drawManualEntry() {
   textStyle(NORMAL);
 }
 
+function drawCategorySelector() {
+  CATEGORIES.forEach(function(cat, idx) {
+    const btnX    = SUGG_X + idx * (CAT_BTN_W + CAT_BTN_GAP);
+    const active  = cat === selectedMealCategory;
+    const hovered = !active &&
+                    mouseX >= btnX && mouseX <= btnX + CAT_BTN_W &&
+                    mouseY >= CAT_BTN_Y && mouseY <= CAT_BTN_Y + CAT_BTN_H;
+
+    if (active) {
+      fill(CLR_PRIMARY);
+      noStroke();
+    } else {
+      fill(hovered ? '#EEF5F0' : CLR_WHITE);
+      stroke(CLR_PRIMARY);
+      strokeWeight(1.5);
+    }
+    rect(btnX, CAT_BTN_Y, CAT_BTN_W, CAT_BTN_H, 6);
+
+    noStroke();
+    fill(active ? CLR_WHITE : CLR_TEXT);
+    textSize(12);
+    textStyle(active ? BOLD : NORMAL);
+    textAlign(CENTER, CENTER);
+    text(cat, btnX + CAT_BTN_W / 2, CAT_BTN_Y + CAT_BTN_H / 2);
+    textStyle(NORMAL);
+  });
+}
+
 function onManualSubmit() {
   const naam     = manualNameField.value().trim();
   const kcalRaw  = parseInt(manualKcalField.value(), 10);
   if (!naam || isNaN(kcalRaw) || kcalRaw <= 0) return;
 
-  selectedFoodItem = {
+  selectedFoodItem     = {
     naam:              naam,
     kcal:              kcalRaw,
     portieOmschrijving: 'Handmatig ingevoerd',
     categorie:         'overig'
   };
+  selectedMealCategory = 'Snack';
   clearSearch();
   redraw();
 }
@@ -269,9 +311,10 @@ function addToLog(item) {
   dagLog.push({
     naam:      item.naam,
     kcal:      item.kcal,
-    categorie: 'Snack',
+    categorie: selectedMealCategory,
     timestamp: new Date().toISOString()
   });
+  selectedMealCategory = 'Snack';
 }
 
 function drawDagLog() {
@@ -319,7 +362,8 @@ function mousePressed() {
     const rowY = SUGG_Y + idx * (SUGG_H + SUGG_GAP);
     if (mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
         mouseY >= rowY   && mouseY <= rowY + SUGG_H) {
-      selectedFoodItem = item;
+      selectedFoodItem     = item;
+      selectedMealCategory = 'Snack';
       clearSearch();
       redraw();
     }
@@ -329,6 +373,17 @@ function mousePressed() {
       mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
       mouseY >= MANUAL_BTN_Y && mouseY <= MANUAL_BTN_Y + MANUAL_BTN_H) {
     onManualSubmit();
+  }
+
+  // Category selector clicks
+  if (selectedFoodItem && mouseY >= CAT_BTN_Y && mouseY <= CAT_BTN_Y + CAT_BTN_H) {
+    CATEGORIES.forEach(function(cat, idx) {
+      const btnX = SUGG_X + idx * (CAT_BTN_W + CAT_BTN_GAP);
+      if (mouseX >= btnX && mouseX <= btnX + CAT_BTN_W) {
+        selectedMealCategory = cat;
+        redraw();
+      }
+    });
   }
 
   if (selectedFoodItem &&
