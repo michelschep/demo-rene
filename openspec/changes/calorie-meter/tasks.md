@@ -13,8 +13,8 @@
 ## 3. Voedsel Loggen
 
 - [x] 3.1 Implementeer het toevoegen van een geselecteerd item aan de daglog (naam, kcal, maaltijdcategorie, timestamp)
-- [ ] 3.2 Voeg maaltijdcategorie-selector toe (Ontbijt / Lunch / Diner / Snack) met standaard "Snack"
-- [ ] 3.3 Implementeer verwijder-functie per logitem (klik op ✕-icoon verwijdert item uit log en herberekent totaal)
+- [x] 3.2 Voeg maaltijdcategorie-selector toe (Ontbijt / Lunch / Diner / Snack) met standaard "Snack"
+- [x] 3.3 Implementeer verwijder-functie per logitem (klik op ✕-icoon verwijdert item uit log en herberekent totaal)
 
 ## 4. localStorage Persistentie
 

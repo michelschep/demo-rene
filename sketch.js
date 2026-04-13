@@ -35,6 +35,10 @@ const LOG_START_Y  = 420;
 const LOG_ITEM_H   = 44;
 const LOG_ITEM_GAP = 4;
 
+// Delete button (✕) inside each log item
+const DEL_BTN_SIZE = 24;  // hit area width & height
+const DEL_BTN_MARGIN = 8; // from right edge of item row
+
 // Manual entry layout constants
 const MANUAL_NOT_FOUND_Y = SUGG_Y + 14;   // "Niet gevonden" label centre-Y
 const MANUAL_INPUT_Y     = SUGG_Y + 42;   // DOM input row Y (canvas-relative)
@@ -307,6 +311,17 @@ function drawSelectedItem() {
   textStyle(NORMAL);
 }
 
+function logItemDeleteBounds(idx) {
+  const itemY = LOG_START_Y + 12 + idx * (LOG_ITEM_H + LOG_ITEM_GAP);
+  const btnX  = SUGG_X + SUGG_W - DEL_BTN_MARGIN - DEL_BTN_SIZE;
+  const btnY  = itemY + (LOG_ITEM_H - DEL_BTN_SIZE) / 2;
+  return { x: btnX, y: btnY, w: DEL_BTN_SIZE, h: DEL_BTN_SIZE };
+}
+
+function removeFromLog(idx) {
+  dagLog.splice(idx, 1);
+}
+
 function addToLog(item) {
   dagLog.push({
     naam:      item.naam,
@@ -349,12 +364,23 @@ function drawDagLog() {
     fill(CLR_ACCENT);
     textSize(13);
     textAlign(RIGHT, TOP);
-    text(entry.kcal + ' kcal', SUGG_X + SUGG_W - 10, itemY + 16);
+    text(entry.kcal + ' kcal', SUGG_X + SUGG_W - DEL_BTN_SIZE - DEL_BTN_MARGIN - 6, itemY + 16);
+
+    // ✕ delete button
+    const db      = logItemDeleteBounds(idx);
+    const delHov  = mouseX >= db.x && mouseX <= db.x + db.w &&
+                    mouseY >= db.y && mouseY <= db.y + db.h;
+    noStroke();
+    fill(delHov ? '#D94F3B' : CLR_MUTED);
+    textSize(16);
+    textAlign(CENTER, CENTER);
+    text('✕', db.x + db.w / 2, db.y + db.h / 2);
   });
 }
 
 function mouseMoved() {
   if (filteredFoodItems.length > 0 || showManualEntry || selectedFoodItem) redraw();
+  if (dagLog.length > 0) redraw();
 }
 
 function mousePressed() {
@@ -392,5 +418,16 @@ function mousePressed() {
     addToLog(selectedFoodItem);
     selectedFoodItem = null;
     redraw();
+  }
+
+  // Delete log item via ✕ button
+  for (let i = 0; i < dagLog.length; i++) {
+    const db = logItemDeleteBounds(i);
+    if (mouseX >= db.x && mouseX <= db.x + db.w &&
+        mouseY >= db.y && mouseY <= db.y + db.h) {
+      removeFromLog(i);
+      redraw();
+      return;
+    }
   }
 }
