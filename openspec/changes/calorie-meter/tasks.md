@@ -8,11 +8,11 @@
 
 - [x] 2.1 Implementeer live zoekfunctie in `sketch.js`: filter `foods`-array op ingevoerde tekst (minimaal 2 tekens)
 - [x] 2.2 Toon maximaal 5 zoeksuggesties als klikbare elementen onder het zoekveld
-- [ ] 2.3 Implementeer "Niet gevonden" flow: toon handmatig invoerveld voor naam + calorieën wanneer geen resultaten
+- [x] 2.3 Implementeer "Niet gevonden" flow: toon handmatig invoerveld voor naam + calorieën wanneer geen resultaten
 
 ## 3. Voedsel Loggen
 
-- [ ] 3.1 Implementeer het toevoegen van een geselecteerd item aan de daglog (naam, kcal, maaltijdcategorie, timestamp)
+- [x] 3.1 Implementeer het toevoegen van een geselecteerd item aan de daglog (naam, kcal, maaltijdcategorie, timestamp)
 - [ ] 3.2 Voeg maaltijdcategorie-selector toe (Ontbijt / Lunch / Diner / Snack) met standaard "Snack"
 - [ ] 3.3 Implementeer verwijder-functie per logitem (klik op ✕-icoon verwijdert item uit log en herberekent totaal)
 

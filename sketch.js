@@ -18,6 +18,16 @@ const SUGG_H   = 48;
 const SUGG_GAP = 4;
 const SUGG_R   = 8;
 
+// Log button (shown below selected item)
+const LOG_BTN_Y = SUGG_Y + SUGG_H + 8;  // 158
+const LOG_BTN_H = 40;
+const LOG_BTN_R = 8;
+
+// Log list layout
+const LOG_START_Y  = 420;
+const LOG_ITEM_H   = 44;
+const LOG_ITEM_GAP = 4;
+
 // Manual entry layout constants
 const MANUAL_NOT_FOUND_Y = SUGG_Y + 14;   // "Niet gevonden" label centre-Y
 const MANUAL_INPUT_Y     = SUGG_Y + 42;   // DOM input row Y (canvas-relative)
@@ -33,6 +43,9 @@ let searchInputField;
 let searchQueryText   = '';
 let filteredFoodItems = [];
 let selectedFoodItem  = null;
+
+// Log state
+let dagLog = [];
 
 // Manual entry state
 let manualNameField;
@@ -99,6 +112,7 @@ function draw() {
   drawSuggestions();
   if (showManualEntry) drawManualEntry();
   drawSelectedItem();
+  drawDagLog();
   noLoop(); // only redraw on input changes
 }
 
@@ -235,10 +249,69 @@ function drawSelectedItem() {
   textSize(11);
   textAlign(LEFT, TOP);
   text(selectedFoodItem.portieOmschrijving, SUGG_X + 34, boxY + 28);
+
+  // "Toevoegen aan log" button
+  const btnHovered = mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
+                     mouseY >= LOG_BTN_Y && mouseY <= LOG_BTN_Y + LOG_BTN_H;
+  fill(btnHovered ? '#5A8F67' : CLR_PRIMARY);
+  noStroke();
+  rect(SUGG_X, LOG_BTN_Y, SUGG_W, LOG_BTN_H, LOG_BTN_R);
+
+  fill(CLR_WHITE);
+  textSize(14);
+  textStyle(BOLD);
+  textAlign(CENTER, CENTER);
+  text('Toevoegen aan log', SUGG_X + SUGG_W / 2, LOG_BTN_Y + LOG_BTN_H / 2);
+  textStyle(NORMAL);
+}
+
+function addToLog(item) {
+  dagLog.push({
+    naam:      item.naam,
+    kcal:      item.kcal,
+    categorie: 'Snack',
+    timestamp: new Date().toISOString()
+  });
+}
+
+function drawDagLog() {
+  if (dagLog.length === 0) return;
+
+  noStroke();
+  fill(CLR_TEXT);
+  textSize(13);
+  textStyle(BOLD);
+  textAlign(LEFT, BASELINE);
+  text('Daglog', SUGG_X, LOG_START_Y);
+  textStyle(NORMAL);
+
+  dagLog.forEach(function(entry, idx) {
+    const itemY = LOG_START_Y + 12 + idx * (LOG_ITEM_H + LOG_ITEM_GAP);
+
+    fill(CLR_WHITE);
+    stroke(204, 204, 204);
+    strokeWeight(1);
+    rect(SUGG_X, itemY, SUGG_W, LOG_ITEM_H, 8);
+
+    noStroke();
+    fill(CLR_TEXT);
+    textSize(13);
+    textAlign(LEFT, TOP);
+    text(entry.naam, SUGG_X + 12, itemY + 8);
+
+    fill(CLR_MUTED);
+    textSize(11);
+    text(entry.categorie, SUGG_X + 12, itemY + 26);
+
+    fill(CLR_ACCENT);
+    textSize(13);
+    textAlign(RIGHT, TOP);
+    text(entry.kcal + ' kcal', SUGG_X + SUGG_W - 10, itemY + 16);
+  });
 }
 
 function mouseMoved() {
-  if (filteredFoodItems.length > 0 || showManualEntry) redraw();
+  if (filteredFoodItems.length > 0 || showManualEntry || selectedFoodItem) redraw();
 }
 
 function mousePressed() {
@@ -256,5 +329,13 @@ function mousePressed() {
       mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
       mouseY >= MANUAL_BTN_Y && mouseY <= MANUAL_BTN_Y + MANUAL_BTN_H) {
     onManualSubmit();
+  }
+
+  if (selectedFoodItem &&
+      mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
+      mouseY >= LOG_BTN_Y && mouseY <= LOG_BTN_Y + LOG_BTN_H) {
+    addToLog(selectedFoodItem);
+    selectedFoodItem = null;
+    redraw();
   }
 }
