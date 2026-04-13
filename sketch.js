@@ -11,29 +11,58 @@ const CANVAS_W = 480;
 const CANVAS_H = 800;
 
 // Suggestion layout constants
-const SUGG_X    = 90;
-const SUGG_Y    = 102;
-const SUGG_W    = 300;
-const SUGG_H    = 48;
-const SUGG_GAP  = 4;
-const SUGG_R    = 8;
+const SUGG_X   = 90;
+const SUGG_Y   = 102;
+const SUGG_W   = 300;
+const SUGG_H   = 48;
+const SUGG_GAP = 4;
+const SUGG_R   = 8;
+
+// Manual entry layout constants
+const MANUAL_NOT_FOUND_Y = SUGG_Y + 14;   // "Niet gevonden" label centre-Y
+const MANUAL_INPUT_Y     = SUGG_Y + 42;   // DOM input row Y (canvas-relative)
+const MANUAL_NAME_W      = 185;
+const MANUAL_KCAL_W      = 99;
+const MANUAL_BTN_Y       = SUGG_Y + 100;  // drawn button top Y
+const MANUAL_BTN_H       = 44;
+const MANUAL_BTN_R       = 8;
 
 // Search state
+let canvasPos;
 let searchInputField;
 let searchQueryText   = '';
 let filteredFoodItems = [];
 let selectedFoodItem  = null;
 
+// Manual entry state
+let manualNameField;
+let manualKcalField;
+let showManualEntry = false;
+
 function setup() {
   let cnv = createCanvas(CANVAS_W, CANVAS_H);
   cnv.parent(document.body);
+  canvasPos = cnv.position();
 
   searchInputField = createInput('');
   searchInputField.attribute('placeholder', 'Zoek voedsel… (typ min. 2 tekens)');
   searchInputField.size(300);
-  // Position relative to canvas top-left
-  searchInputField.position(cnv.position().x + 90, cnv.position().y + 64);
+  searchInputField.position(canvasPos.x + SUGG_X, canvasPos.y + 64);
   searchInputField.input(onSearchInput);
+
+  manualNameField = createInput('');
+  manualNameField.attribute('placeholder', 'Naam voedsel');
+  manualNameField.size(MANUAL_NAME_W);
+  manualNameField.position(canvasPos.x + SUGG_X, canvasPos.y + MANUAL_INPUT_Y);
+  manualNameField.hide();
+
+  manualKcalField = createInput('');
+  manualKcalField.attribute('placeholder', 'kcal');
+  manualKcalField.attribute('type', 'number');
+  manualKcalField.attribute('min', '1');
+  manualKcalField.size(MANUAL_KCAL_W);
+  manualKcalField.position(canvasPos.x + SUGG_X + MANUAL_NAME_W + 8, canvasPos.y + MANUAL_INPUT_Y);
+  manualKcalField.hide();
 
   textFont('Nunito');
 }
@@ -41,6 +70,19 @@ function setup() {
 function onSearchInput() {
   searchQueryText   = searchInputField.value().trim();
   filteredFoodItems = filterFoods(searchQueryText);
+
+  const noResults = searchQueryText.length >= 2 && filteredFoodItems.length === 0;
+  if (noResults !== showManualEntry) {
+    showManualEntry = noResults;
+    if (showManualEntry) {
+      manualNameField.show();
+      manualKcalField.show();
+    } else {
+      manualNameField.hide();
+      manualKcalField.hide();
+    }
+  }
+
   redraw();
 }
 
@@ -55,8 +97,58 @@ function draw() {
   drawAppTitle();
   drawSearchLabel();
   drawSuggestions();
+  if (showManualEntry) drawManualEntry();
   drawSelectedItem();
   noLoop(); // only redraw on input changes
+}
+
+function drawManualEntry() {
+  // "Niet gevonden" label
+  noStroke();
+  fill(CLR_MUTED);
+  textSize(13);
+  textAlign(CENTER, CENTER);
+  text('Niet gevonden — voer handmatig in', CANVAS_W / 2, MANUAL_NOT_FOUND_Y);
+
+  // "Toevoegen" drawn button
+  const btnHovered = mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
+                     mouseY >= MANUAL_BTN_Y && mouseY <= MANUAL_BTN_Y + MANUAL_BTN_H;
+  fill(btnHovered ? '#5A8F67' : CLR_PRIMARY);
+  noStroke();
+  rect(SUGG_X, MANUAL_BTN_Y, SUGG_W, MANUAL_BTN_H, MANUAL_BTN_R);
+
+  fill(CLR_WHITE);
+  textSize(14);
+  textStyle(BOLD);
+  textAlign(CENTER, CENTER);
+  text('Toevoegen', SUGG_X + SUGG_W / 2, MANUAL_BTN_Y + MANUAL_BTN_H / 2);
+  textStyle(NORMAL);
+}
+
+function onManualSubmit() {
+  const naam     = manualNameField.value().trim();
+  const kcalRaw  = parseInt(manualKcalField.value(), 10);
+  if (!naam || isNaN(kcalRaw) || kcalRaw <= 0) return;
+
+  selectedFoodItem = {
+    naam:              naam,
+    kcal:              kcalRaw,
+    portieOmschrijving: 'Handmatig ingevoerd',
+    categorie:         'overig'
+  };
+  clearSearch();
+  redraw();
+}
+
+function clearSearch() {
+  searchQueryText   = '';
+  filteredFoodItems = [];
+  searchInputField.value('');
+  showManualEntry = false;
+  manualNameField.hide();
+  manualNameField.value('');
+  manualKcalField.hide();
+  manualKcalField.value('');
 }
 
 function drawAppTitle() {
@@ -146,7 +238,7 @@ function drawSelectedItem() {
 }
 
 function mouseMoved() {
-  if (filteredFoodItems.length > 0) redraw();
+  if (filteredFoodItems.length > 0 || showManualEntry) redraw();
 }
 
 function mousePressed() {
@@ -154,11 +246,15 @@ function mousePressed() {
     const rowY = SUGG_Y + idx * (SUGG_H + SUGG_GAP);
     if (mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
         mouseY >= rowY   && mouseY <= rowY + SUGG_H) {
-      selectedFoodItem  = item;
-      searchQueryText   = '';
-      filteredFoodItems = [];
-      searchInputField.value('');
+      selectedFoodItem = item;
+      clearSearch();
       redraw();
     }
   });
+
+  if (showManualEntry &&
+      mouseX >= SUGG_X && mouseX <= SUGG_X + SUGG_W &&
+      mouseY >= MANUAL_BTN_Y && mouseY <= MANUAL_BTN_Y + MANUAL_BTN_H) {
+    onManualSubmit();
+  }
 }
